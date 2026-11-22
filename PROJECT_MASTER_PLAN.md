@@ -238,9 +238,14 @@ You must display this exact table in Section 2.2 to prove why filtering down to 
    * (c) `msno.heatmap()` — Nullity correlation matrix between features.
    * (d) `msno.dendrogram()` — Hierarchical clustering of missingness patterns.
 3. **Mechanism Classification (MCAR vs MAR vs MNAR):**
-   * Demonstrate through a two-sample $t$-test that working hours missingness depends on gender and sector (proving **Missing at Random - MAR**).
+   * **Contingency Table $\chi^2$ Test for MAR:** Following Dr. Panda's exam methodology (Insem 2 Model Paper Q5), we formally test whether missingness in `Weekly_Hours` is independent of demographics using:
+     ```python
+     contingency_table = pd.crosstab(df_raw['Weekly_Hours'].isna(), df_raw['Gender'])
+     chi2, p_val, dof, _ = scipy.stats.chi2_contingency(contingency_table)
+     ```
+     A statistically significant $p < 0.001$ rigorously rejects **MCAR** and proves **Missing at Random (MAR)** conditioned on Gender and Sector.
 4. **Comparative Imputation Experiment:**
-   * Evaluate on fresh copies: (a) Listwise Deletion, (b) Mean Imputation, (c) Median Imputation, (d) Iterative MICE Imputation (`IterativeImputer(max_iter=10, sample_posterior=True)`).
+   * Evaluate on fresh copies: (a) Listwise Deletion, (b) Mean Imputation, (c) Median Imputation, (d) Group-wise Stratified Median Imputation (`df.groupby(['Sector', 'Gender'])['Weekly_Hours'].transform('median')`), (e) Iterative MICE Imputation (`IterativeImputer(max_iter=10, sample_posterior=True)`).
    * **KDE Density Overlay:** Plot the density of observed vs Mean vs Median vs MICE imputed values. Prove that Mean/Median creates artificial spikes at the center, whereas MICE preserves the empirical multi-modal variance.
 
 #### 2.4 Dr. Panda's 3-Tier Outlier Detection Hierarchy
@@ -248,7 +253,8 @@ You must display this exact table in Section 2.2 to prove why filtering down to 
 
 | Tier | Outlier Scope | Mathematical Diagnostic Tool | Criterion / Threshold | Project Implementation |
 |:---:|:---|:---|:---|:---|
-| **Tier 1** | **Univariate** | Tukey's IQR Fences & Z-Score | $[Q_1 - 1.5\text{IQR}, Q_3 + 1.5\text{IQR}]$ & $\|Z\| > 3.0$ | Side-by-side Histogram + Boxplot; compare counts flagged |
+| **Tier 1A** | **Univariate (Standard)** | Tukey's IQR Fences & Standard Z-Score | $[Q_1 - 1.5\text{IQR}, Q_3 + 1.5\text{IQR}]$ & $\|Z\| > 3.0$ | Side-by-side Histogram + Boxplot; compare counts flagged |
+| **Tier 1B** | **Univariate (Robust MAD)** | Boris Iglewicz & David Hoaglin (1993) Modified Z-Score | $M_i = \frac{0.6745 \cdot (x_i - \tilde{x})}{\text{MAD}} > 3.5$, where $\text{MAD}=\text{median}(\|x_i - \tilde{x}\|)$ | Robust outlier detection resistant to extreme wage skewness |
 | **Tier 2** | **Bivariate** | Scatter Plot Outlier Mapping | Joint bivariate leverage points | Scatter plot of Hourly Wage vs Age with outliers highlighted |
 | **Tier 3** | **Multivariate** | Mahalanobis Distance & Isolation Forest | $D^2 = (x-\mu)^T \Sigma^{-1} (x-\mu) > \chi^2_{0.975, p}$ | Flagging multi-dimensional anomalous records across 4 features |
 
@@ -260,12 +266,16 @@ You must display this exact table in Section 2.2 to prove why filtering down to 
   4. *Log Transformation* ($\ln(\text{Hourly Wage})$)
   Tabulate: Mean, Median, Standard Deviation, Skewness, Kurtosis.
 
-#### 2.5 Distribution Shape, Skewness & Formal Normality Testing
-*(Assignment 5 Q1)*
+#### 2.5 Distribution Shape, Skewness, Normality & Power Transformations
+*(Assignment 5 Q1, Insem 2 Cheatsheet §11)*
 * **Descriptive Shape Metrics:** Raw weekly wage exhibits heavy right skewness ($\text{Skewness} = 2.48$, $\text{Kurtosis} = 11.20$).
 * **Formal Hypothesis Testing:**
   * **Shapiro-Wilk Test:** `scipy.stats.shapiro(sample)` yields $p < 0.001$ (rejecting normality for raw wage).
   * **Kolmogorov-Smirnov Test:** `scipy.stats.kstest(sample, 'norm')`.
+* **Optimal Power Transformation Search (Box-Cox vs. Yeo-Johnson):**
+  * We run `scipy.stats.boxcox()` to estimate the optimal transformation parameter $\hat{\lambda}$ via Maximum Likelihood Estimation:
+    $$y^{(\lambda)} = \begin{cases} \frac{y^\lambda - 1}{\lambda} & \text{if } \lambda \ne 0 \\ \ln(y) & \text{if } \lambda = 0 \end{cases}$$
+  * Demonstrating that the empirical estimate $\hat{\lambda} \approx 0.02 \approx 0$ provides direct mathematical, econometric proof that the natural logarithmic transformation $\ln(\text{Wage})$ is optimal.
 * **Logarithmic Transformation:**
   $$\text{Log\_Hourly\_Wage} = \ln\left(\frac{\text{Weekly\_Wage}}{\text{Weekly\_Hours}}\right)$$
 * Successfully reduces skewness to $\text{Skewness} = 0.09$, validating Gaussian error assumptions for regression modeling.
@@ -309,11 +319,15 @@ Every figure in this chapter must be rendered with high resolution (300 DPI) and
    $$\text{Experience\_Sq} = (\text{Experience})^2$$
 4. **Demographic Intersectionality:** Categorical interaction encoding: `[Rural Female, Rural Male, Urban Female, Urban Male]`.
 
-#### 4.2 Feature Scaling & Categorical Encoding
-*(Lab 7 Q5c, Q5e, Lab 9 Q16–Q17)*
+#### 4.2 Feature Scaling, Categorical Encoding & Binning
+*(Lab 7 Q5c, Q5e, Lab 9 Q16–Q17, Insem 2 Cheatsheet §11)*
 * **Categorical Encoding:** One-Hot Encoding for nominal features (`State`, `Sector`, `Gender`); Ordinal Encoding for `Education_Level`.
   > **Note on Label Encoding:** *"Label encoding a nominal feature like State (assigning Gujarat=24, Maharashtra=27) implies an artificial numeric order ($27 > 24$), which distorts linear regression gradients. One-Hot encoding avoids this risk."*
 * **Feature Scaling:** Compare `StandardScaler` (Z-score normalization) vs `MinMaxScaler` $[0, 1]$. OLS and Ridge/Lasso are trained on standardized features so penalty parameters $\alpha$ apply uniformly.
+* **Equal-Width (`pd.cut`) vs. Equal-Frequency (`pd.qcut`) Binning Audit:**
+  *(Insem 2 Model Paper Q8)*
+  * **Equal-Width (`pd.cut(wage, 4)`):** Due to severe right-skewness, splits bins into equal ₹ ranges, dumping $>90\%$ of workers into the lowest tier.
+  * **Equal-Frequency (`pd.qcut(wage, 4)`):** Partitions sample into 4 balanced income quartiles (Q1: Lower Class, Q2: Working Class, Q3: Middle Class, Q4: Upper Earning Class), demonstrating why quantile binning is required for skewed socio-economic variables.
 
 #### 4.3 Multicollinearity Diagnostics (Pearson vs Spearman & VIF)
 *(Lab 7 Q4, Lab 8 Q4, Lab 9 Q19)*
