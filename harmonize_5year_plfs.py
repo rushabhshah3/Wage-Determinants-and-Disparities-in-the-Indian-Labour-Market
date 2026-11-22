@@ -104,7 +104,7 @@ def load_year_2025(base_dir):
     df['Year'] = 2025
     return df[['Year', 'State', 'Sector', 'Gender', 'Age', 'Education', 'Weekly_Wage', 'Weekly_Hours']]
 
-def build_harmonized_dataset(base_dir="eda_data", output_csv="PLFS_2021_2025_Harmonized_Clean.csv"):
+def build_harmonized_dataset(base_dir="data", output_csv="clean_data/PLFS_2021_2025_Harmonized_Clean.csv"):
     dfs = [
         load_year_2021(base_dir),
         load_year_2022(base_dir),

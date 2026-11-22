@@ -2,7 +2,8 @@
 ### Course: IT 462 — Exploratory Data Analysis | Dhirubhai Ambani University (DAIICT), Gandhinagar
 ### Under the Guidance of: Dr. Gopinath Panda | Course Weightage: 50% Credit (Grade Determinant)
 **Primary Data Source:** Official Government of India — Ministry of Statistics and Programme Implementation (MoSPI)  
-**Dataset Location:** `/Users/viraj/Desktop/eda research/clean_data/` (`PLFS_2021_2025_Harmonized_Clean.csv`)  
+**Dataset Location:** `/Users/viraj/Desktop/EDA Project/clean_data/` (`PLFS_2021_2025_Harmonized_Clean.csv`)  
+**Raw Source Location:** `/Users/viraj/Desktop/EDA Project/data/` (5 Annual MoSPI Releases, Option A)  
 **Scope:** 2,833,966 Surveyed Citizens | 301,065 Active Salaried Earners | 295,056 Clean Records | 5 Continuous Years (2021–2025)  
 **Methodology:** 100% Regression-Driven Architecture (No Classification) | Academic Research Standards
 
@@ -124,7 +125,7 @@ To adhere strictly to **Dr. Gopinath Panda's EDA evaluation criteria**, our proj
 
 ### 5-Year Survey Provenance Breakdown:
 
-| Year | Verified Working Directory in `eda_data/` | Person Microdata CSV | Raw Survey Citizens | Working Age (15–65) | Clean Salaried Earners |
+| Year | Verified Working Directory in `data/` | Person Microdata CSV | Raw Survey Citizens | Working Age (15–65) | Clean Salaried Earners |
 |:---:|:---|:---|:---:|:---:|:---:|
 | **2021** | `01_Periodic Labour Force Survey (PLFS), July 2021-June 2022/PLFS_Data_2021-22_CSV/` | `perv1.csv` | 428,525 | 306,120 | **42,020** |
 | **2022** | `02_Periodic Labour Force Survey (PLFS), Calendar Year 2022 (Jan22 Dec22)/PLFS_Data_2022-22_CSV/` | `cperv1.csv` | 424,926 | 303,814 | **42,916** |
@@ -654,7 +655,7 @@ def plot_fig_5_4(y_test, y_pred):
 
 ## 9. Automated 5-Year Data Harmonization Script
 
-This script ingests all 5 years of verified microdata directly from `eda_data/` and produces the clean master analytical dataframe (`clean_data/PLFS_2021_2025_Harmonized_Clean.csv`):
+This script ingests all 5 years of verified microdata directly from `data/` and produces the clean master analytical dataframe (`clean_data/PLFS_2021_2025_Harmonized_Clean.csv`):
 
 ```python
 # ==============================================================================
@@ -737,7 +738,7 @@ def load_year_2025(base_dir):
     df['Year'] = 2025
     return df[['Year', 'State', 'Sector', 'Gender', 'Age', 'Education', 'Weekly_Wage', 'Weekly_Hours']]
 
-def build_harmonized_dataset(base_dir="eda_data", output_csv="clean_data/PLFS_2021_2025_Harmonized_Clean.csv"):
+def build_harmonized_dataset(base_dir="data", output_csv="clean_data/PLFS_2021_2025_Harmonized_Clean.csv"):
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     dfs = [load_year_2021(base_dir), load_year_2022(base_dir), load_year_2023(base_dir), load_year_2024(base_dir), load_year_2025(base_dir)]
     master = pd.concat(dfs, ignore_index=True)
