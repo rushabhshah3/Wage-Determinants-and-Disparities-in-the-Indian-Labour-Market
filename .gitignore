@@ -21,6 +21,8 @@ eda_data/
 *.zip
 *.tar.gz
 
-# Allow clean harmonized project dataset for team members
+# Allow clean harmonized project dataset and raw uncleaned multi-year data
 !clean_data/
 !clean_data/**
+!raw_data/
+!raw_data/**

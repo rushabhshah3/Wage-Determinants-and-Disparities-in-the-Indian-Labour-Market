@@ -100,9 +100,29 @@ pip install streamlit watchdog
 
 ---
 
-## 4. Data Provenance & File Inventory
+## 4. Data Provenance & Dual-Stage Dataset Architecture
 
-The 5 years of verified microdata reside in `/Users/viraj/Desktop/eda research/clean_data/`:
+To adhere strictly to **Dr. Gopinath Panda's EDA evaluation criteria**, our project utilizes a **Dual-Stage Architecture (Raw $\rightarrow$ Clean)**. We do **NOT** conceal the raw data or start from a pre-imputed dataset:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        DUAL-STAGE DATASET ARCHITECTURE                                 │
+│                                                                                        │
+│   STAGE 1: RAW UNCLEANED MICRODATA                                                     │
+│   Location: raw_data/PLFS_2021_2025_Raw_Messy.csv.gz (8.95 MB)                        │
+│   Records:  2,833,966 Citizens | Contains 1.74M NaNs, 89.3% ₹0 Wages, 3.41 Skewness    │
+│   Used In:  Chapter 1 (Inspection) & Chapter 2 (Missingness, Funnel, Outlier Analysis) │
+│                                         │                                              │
+│                                         ▼ (Cleaned live inside Notebook Chapter 2)     │
+│                                                                                        │
+│   STAGE 2: HARMONIZED CLEAN ANALYSIS DATASET                                           │
+│   Location: clean_data/PLFS_2021_2025_Harmonized_Clean.csv (40.59 MB)                  │
+│   Records:  295,056 Active Earners | Mapped English Labels, Real Wages, Experience     │
+│   Used In:  Chapter 3 (Visualizations), Chapter 4 (Sensitivity), Chapter 5 (Regression)│
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 5-Year Survey Provenance Breakdown:
 
 | Year | Verified Working Directory in `eda_data/` | Person Microdata CSV | Raw Survey Citizens | Working Age (15–65) | Clean Salaried Earners |
 |:---:|:---|:---|:---:|:---:|:---:|
