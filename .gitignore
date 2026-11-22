@@ -11,6 +11,16 @@ __pycache__/
 .AppleDouble
 .LSOverride
 
-# Large datasets (PLFS dataset >400MB exceeds GitHub's 100MB limit)
+# Large datasets and raw survey archives (>100MB exceeds GitHub's limit)
 Data_in_CSV/
+Data_in_CSV (1)/
+CSV_PLFS_Calendar_Year_2021/
+data/
+eda_data/
 *.csv
+*.zip
+*.tar.gz
+
+# Allow clean harmonized project dataset for team members
+!clean_data/
+!clean_data/**
